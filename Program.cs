@@ -1,10 +1,16 @@
 ﻿using System;
 using UserManagement;
+using UserManagement.Models;
+using UserManagement.Services;
+using UserManagement.Utils;
 
 class Program
 {
     static void Main(string[] args)
     {
+        IUserService userService = new UserService();
+        var ReadRequiredInt = ConsoleInputHelper.ReadRequiredInt;
+        var ReadRequiredInput = ConsoleInputHelper.ReadRequiredInput;
 
         List<User> users = new List<User>();
 
@@ -12,30 +18,144 @@ class Program
         while (true)
         {
             ShowMenu();
-            int option = ReadMenuOption();
+            int input = ReadRequiredInt("Enter option (1-21): ");
+            int option = ReadMenuOption(input);
             switch (option)
             {
                 case 1:
                     ShowMenu();
                     break;
                 case 2:
-                    User user = CreateUser();
-                    users.Add(user);
-                    break;
+                    var user = new User
+                    {
+                        Name = ReadRequiredInput("First Name: "),
+                        LastName = ReadRequiredInput("Last Name: "),
+                        Email = ReadRequiredInput("Email: "),
+                        Age = ReadRequiredInt("User age: "),
+                        Status = ReadRequiredInput("Status: "),
+                        Role = ReadRequiredInput("Role: "),
+                        Department = ReadRequiredInput("Department: ")
+                    };
+
+                    var created = userService.Create(user);
+
+                    Console.WriteLine($"User created with ID: {created.Id}");
+                //User user = CreateUser();
+                //users.Add(user);
+                break;
                 case 3:
-                    ShowUser(users);
+                    int id = ReadRequiredInt("User ID: ");
+
+                    User? foundedUser = userService.GetById(id);
+                    if (foundedUser is not null)
+                    {
+                        Console.WriteLine(foundedUser.ToString());
+                    }
                     break;
                 case 4:
-                    ShowAllUsers(users);
+                    List<User> allUsers = userService.GetAll();
+
+                    foreach (User u in allUsers)
+                    {
+                        Console.WriteLine(u.ToString());
+                    }
                     break;
                 case 5:
-                    RemoveUser(users);
-                   
+                    int userId = ReadRequiredInt("User ID: ");
+
+                    bool removed = userService.Remove(userId);
+
+                    if (removed)
+                    {
+                        Console.WriteLine("User has been removed");
+                    }else
+                    {
+                        Console.WriteLine("User does not exist" );
+                    }
+
                     break;
                 case 6:
-               UpdateUser(users);
-            
+                    int userID = ReadRequiredInt("User ID: ");
+                    string name = ReadRequiredInput("Name: ");
+
+                    User updatedUser = userService.Update(userID, name);
+                    Console.WriteLine("User has been updated.");
                     break;
+                case 7:
+                    int age = ReadRequiredInt("User age: ");
+                    List<User> usersOlder = userService.GetUsersOlderThan(age);
+
+                    foreach (User u in usersOlder)
+                    {
+                        Console.WriteLine(u.ToString());
+                    }
+                    break;
+                case 8:
+                    List<User> sortedByLastName = userService.GetAllSortedByLastName();
+
+                    foreach (User u in sortedByLastName)
+                    {
+                        Console.WriteLine(u.ToString());
+                    }
+                    break;
+                case 9:
+                    List<User> activeUsersSortedByAge = userService.GetActiveUsersSortedByAge();
+
+                    foreach(User u in activeUsersSortedByAge)
+                    {
+                        Console.WriteLine(u.ToString());
+                    }
+                    break;
+                case 10:
+                    List<string> emails = userService.GetUserEmails();
+
+                    foreach(string e in emails)
+                    {
+                        Console.WriteLine(e);
+                    }
+                    break;
+                case 11:
+                    var grouped = userService.GroupUsersByDepartment();
+
+                    foreach (var kvp in grouped)
+                    {
+                        Console.WriteLine($"Department: {kvp.Key}");
+                        foreach (var u in kvp.Value)
+                        {
+                            Console.WriteLine($"- {u.Name} {u.LastName}");
+                        }
+                    }
+                    break;
+                case 12:
+                int adminAmount = userService.CountAdmins();
+                Console.WriteLine($"Admins amount {adminAmount}");
+                break;
+
+                case 13:
+                    string email = ReadRequiredInput("Email: ");
+                    User? userByEmail = userService.GetUserByEmail(email);
+
+                    if(userByEmail is not null)
+                    {
+                        Console.WriteLine($"This is user you were looking for: {userByEmail}");
+                    }
+                    break;
+
+                case 14:
+                    int maxAgedUser = userService.GetMaxAge();
+                    Console.WriteLine($"Max age is", maxAgedUser);
+                    break;
+
+                case 15:
+                    Console.WriteLine($"Average age is: {userService.GetAverageAge()}");
+                    break;
+                case 16:
+                    List<string> distinctDepartments = userService.GetDistinctDepartments();
+
+                    foreach(string department in distinctDepartments)
+                        { Console.WriteLine(department); }
+                    break;
+
                 default: break;
             }
 
@@ -45,14 +165,14 @@ class Program
 
     }
 
-    static int ReadMenuOption()
+    static int ReadMenuOption(int input)
     {
         while (true)
         {
-            string input = ReadRequiredInput("Enter option (1-6): ");
+
             Console.WriteLine("");
-            if (int.TryParse(input, out int option) && option >= 1 && option <= 6)
-                return option;
+            if (input >= 1 && input <= 21)
+                return input;
 
             Console.WriteLine("Invalid option. Please enter a number between 1 and 6.");
         }
@@ -69,148 +189,138 @@ class Program
         Console.WriteLine("Show all users - 4");
         Console.WriteLine("remove a user - 5");
         Console.WriteLine("update a user - 6");
+        Console.WriteLine("users older than age... - 7");
+        Console.WriteLine("GetAllSortedByLastName... - 8");
+        Console.WriteLine("GetActiveUsersSortedByAge... - 9");
+        Console.WriteLine("GetUserEmails... - 10");
+        Console.WriteLine("GroupUsersByDepartment... - 11");
+        Console.WriteLine("CountAdmins... - 12");
+        Console.WriteLine("GetUserByEmail... - 13");
+        Console.WriteLine("GetMaxAge... - 14");
+        Console.WriteLine("GetAverageAge... - 15");
+        Console.WriteLine("GetDistinctDepartments... - 16");
+        Console.WriteLine("users older than age... - 7");
+        Console.WriteLine("users older than age... - 7");
+        Console.WriteLine("users older than age... - 7");
+        Console.WriteLine("users older than age... - 7");
+        Console.WriteLine("users older than age... - 7");
+        Console.WriteLine("users older than age... - 7");
+        Console.WriteLine("users older than age... - 7");
         Console.WriteLine("");
         Console.WriteLine("------");
     }
 
-    static User CreateUser()
-    {
-        int id = ReadRequiredInt("User ID: ");
-        string Name = ReadRequiredInput("First Name: ");
-        string LastName = ReadRequiredInput("LastName: ");
-        string Email = ReadRequiredInput("Email: ");
+//    static User CreateUser()
+//    {
+//        string Name = ReadRequiredInput("First Name: ");
+//        string LastName = ReadRequiredInput("LastName: ");
+//        string Email = ReadRequiredInput("Email: ");
    
-        int Age = ReadRequiredInt("User age: ");
-        string Status = ReadRequiredInput("Status: ");
-        string Role = ReadRequiredInput("Role: ");
-        string Department = ReadRequiredInput("Department: ");
+//        int Age = ReadRequiredInt("User age: ");
+//        string Status = ReadRequiredInput("Status: ");
+//        string Role = ReadRequiredInput("Role: ");
+//        string Department = ReadRequiredInput("Department: ");
 
-        User user = new User(id, Name, LastName, Email, Age, Status, Role, Department);
+//        User user = new User(Name, LastName, Email, Age, Status, Role, Department);
        
-        Console.WriteLine("New user has been created");
-        return user;
-    }
+//        Console.WriteLine("New user has been created");
+//        return user;
+//    }
 
-    static void UpdateUser(List<User> users)
-    {
-        int userId = ReadRequiredInt("User ID: ");
+//    static void UpdateUser(List<User> users)
+//    {
+//        int UserId = ReadRequiredInt("User ID: ");
 
-        var userToUpdate = users.Find(u => u.id == userId);
+//        var userToUpdate = users.Find(u => u.UserId == UserId);
 
-        if (userToUpdate is null)
-        {
+//        if (userToUpdate is null)
+//        {
 
-            Console.Write("There is no user with provided ID");
-        }
-        else
-        {
-            string Name = ReadRequiredInput("First Name: ");
-            string LastName = ReadRequiredInput("LastName: ");
-            string Email = ReadRequiredInput("Email: ");
-            int.TryParse(ReadRequiredInput("User age: "), out int age);
-            int Age = age;
-            string Status = ReadRequiredInput("Status: ");
-            string Role = ReadRequiredInput("Role: ");
-            string Department = ReadRequiredInput("Department: ");
+//            Console.Write("There is no user with provided ID");
+//        }
+//        else
+//        {
+//            string Name = ReadRequiredInput("First Name: ");
+//            string LastName = ReadRequiredInput("LastName: ");
+//            string Email = ReadRequiredInput("Email: ");
+//            int.TryParse(ReadRequiredInput("User age: "), out int age);
+//            int Age = age;
+//            string Status = ReadRequiredInput("Status: ");
+//            string Role = ReadRequiredInput("Role: ");
+//            string Department = ReadRequiredInput("Department: ");
 
-            userToUpdate.name = Name;   
-            userToUpdate.lastName = LastName;
-            userToUpdate.email = Email;
-            userToUpdate.age = Age;
-            userToUpdate.status = Status;
-            userToUpdate.role = Role;
-            userToUpdate.department = Department;
+//            userToUpdate.name = Name;   
+//            userToUpdate.lastName = LastName;
+//            userToUpdate.email = Email;
+//            userToUpdate.age = Age;
+//            userToUpdate.status = Status;
+//            userToUpdate.role = Role;
+//            userToUpdate.department = Department;
 
-            Console.WriteLine("New user has been updated");
+//            Console.WriteLine("New user has been updated");
 
             
-        }
+//        }
         
-    }
+//    }
 
-    static void RemoveUser(List<User> users)
-    {
-        int userId = ReadRequiredInt("User ID: ");
+//    static void RemoveUser(List<User> users)
+//    {
+//        int UserId = ReadRequiredInt("User ID: ");
 
-        var userToRemove = users.Find(u => u.id == userId);
+//        var userToRemove = users.Find(u => u.UserId == UserId);
 
-        if (userToRemove != null)
-        {
+//        if (userToRemove != null)
+//        {
 
-            Console.WriteLine("Removing user: " + userToRemove);
-        }else
-        {
+//            Console.WriteLine("Removing user: " + userToRemove);
+//        }else
+//        {
             
-            Console.Write("\nThere is no user with provided ID\n");
-        }
+//            Console.Write("\nThere is no user with provided ID\n");
+//        }
 
-            // RemoveAll returns the number of removed items, not a new list.
-            // To return the updated list, remove in-place and return the same list.
-            users.RemoveAll(u => u.id == userId);
-    }
+//            // RemoveAll returns the number of removed items, not a new list.
+//            // To return the updated list, remove in-place and return the same list.
+//            users.RemoveAll(u => u.UserId == UserId);
+//    }
 
-    static void ShowUser(List<User> users)
-    {
-        string IdAsString = ReadRequiredInput("User ID: ");
+//    static void ShowUser()
+//    {
+//        string IdAsString = ReadRequiredInput("User ID: ");
 
-        int.TryParse(IdAsString, out int number);
-        int userId = number;
+//        int.TryParse(IdAsString, out int number);
+//        int UserId = number;
 
-        var userToRemove = users.Find(u => u.id == userId);
+//        var userToRemove = users.Find(u => u.UserId == UserId);
 
-        if (userToRemove != null)
-        {
+//        if (userToRemove != null)
+//        {
 
-            Console.WriteLine(userToRemove.ToString());
-        }else
-        {
-            Console.Write("There is no user with provided ID");
-        }
+//            Console.WriteLine(userToRemove.ToString());
+//        }else
+//        {
+//            Console.Write("There is no user with provided ID");
+//        }
 
   
-    }
+//    }
 
-    static void ShowAllUsers(List<User> users)
-    {
-        if(users.Count == 0)
-        {
-            Console.WriteLine("There are no users");
+//    static void ShowAllUsers(List<User> users)
+//    {
+//        if(users.Count == 0)
+//        {
+//            Console.WriteLine("There are no users");
             
-        }else
-        {
-            foreach (User user in users)
-            {
-                Console.WriteLine(user.ToString());
-            }
-        }
+//        }else
+//        {
+//            foreach (User user in users)
+//            {
+//                Console.WriteLine(user.ToString());
+//            }
+//        }
            
-}
+//}
 
-    static string ReadRequiredInput(string prompt)
-    {
-        string input;
-        do
-        {
-            Console.Write(prompt);
-            input = Console.ReadLine()?.Trim(); // remove leading/trailing spaces
-            if (string.IsNullOrEmpty(input))
-            {
-                Console.WriteLine("Error: This field is required. Please enter a value.");
-            }
-        } while (string.IsNullOrEmpty(input));
-
-        return input;
-    }
-
-    static int ReadRequiredInt(string prompt)
-    {
-        while (true)
-        {
-            string input = ReadRequiredInput(prompt);
-            if (int.TryParse(input, out int value))
-                return value;
-
-            Console.WriteLine("Error: Please enter a valid number.");
-        }
-    }
+   
 }
