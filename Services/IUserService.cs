@@ -9,31 +9,31 @@ namespace UserManagement.Services
 {
     internal interface IUserService
     {
-        User Create(User user);
-        User? GetById(int id);
+        Task<User> Create(User user);
+        Task<User?> GetById(int id);
 
-        List<User> GetAll();
-        bool Remove(int id);
-        User Update(int id, string name);
+        Task<List<User>> GetAll();
+        Task<bool> Remove(int id);
+        Task<User> Update(int id, string name);
 
-        List<User> GetUsersOlderThan(int age);
+        Task<List<User>> GetUsersOlderThan(int age);
 
-        List<User> GetAllSortedByLastName();
+        Task<List<User>> GetAllSortedByLastName();
 
-        List<User> GetActiveUsersSortedByAge();
+        Task<List<User>> GetActiveUsersSortedByAge();
 
-        List<string> GetUserEmails();
+        Task<List<string>> GetUserEmails();
 
-        Dictionary<string, List<User>> GroupUsersByDepartment();
+        Task<Dictionary<string, List<User>>> GroupUsersByDepartment();
 
-        int CountAdmins();
+        Task<int> CountAdmins();
 
-        User? GetUserByEmail(string email);
+        Task<User?> GetUserByEmail(string email);
 
-        int GetMaxAge();
+        Task<int> GetMaxAge();
 
-        int GetAverageAge();
+        Task<double> GetAverageAge();
 
-        List<string GetDistinctDepartments();
+        Task<List<string>> GetDistinctDepartments();
     }
 }

@@ -20,27 +20,30 @@ namespace UserManagement.Services
             SeedUsers(); // wypełnia listę 100 userami przy starcie
         }
 
-        public User Create(User user)
+        public async Task<User> Create(User user)
         {
+            await Task.Delay(800);
             var createdUser = user with { Id = _nextId++ };
             _users.Add(createdUser);
             return createdUser;
 
         }
 
-        public User? GetById(int id)
+        public async Task<User?> GetById(int id)
         {
-
+            await Task.Delay(100);
             return  _users.FirstOrDefault(u => u.Id == id);
         }
 
-        public List<User> GetAll()
+        public async Task<List<User>> GetAll()
         {
+            await Task.Delay(1000);
             return _users;
         }
 
-        public User Update(int id, string name)
+        public async Task<User> Update(int id, string name)
         {
+            await Task.Delay(800);
             var index = _users.FindIndex(u => u.Id == id);
             if (index == -1)
                 throw new InvalidOperationException("User not found");
@@ -51,8 +54,9 @@ namespace UserManagement.Services
             return updatedUser;
         }
 
-        public bool Remove(int id)
+        public async Task<bool> Remove(int id)
         {
+            await Task.Delay(800);
             var user = _users.FirstOrDefault(u => u.Id == id);
             if (user is null)
                 return false;
@@ -61,53 +65,64 @@ namespace UserManagement.Services
             return true;
         }
 
-        public List<User> GetUsersOlderThan(int age)
+        public async Task<List<User>> GetUsersOlderThan(int age)
         {
+            await Task.Delay(800);
             return _users.Where(u => u.Age > age).ToList();
         }
 
-        public List<User> GetAllSortedByLastName()
+        public async Task<List<User>> GetAllSortedByLastName()
         {
+            await Task.Delay(1200);
             return _users.OrderBy(u => u.LastName).ToList();
         }
 
-        public List<User> GetActiveUsersSortedByAge()
+        public async Task<List<User>> GetActiveUsersSortedByAge()
         {
+            await Task.Delay(800);
             return _users.Where(u => u.Status == "Active").OrderBy(u => u.Age).ToList();
         }
 
-        public List<string> GetUserEmails()
+        public async Task<List<string>> GetUserEmails()
         {
+            await Task.Delay(800);
             return _users.Select(u => u.Email).ToList();
         }
 
-        public Dictionary<string, List<User>> GroupUsersByDepartment()
+        public async Task<Dictionary<string, List<User>>> GroupUsersByDepartment()
         {
+            await Task.Delay(800);
             return _users.GroupBy(u => u.Department).ToDictionary(g => g.Key, g => g.ToList());
         }
 
-        public int CountAdmins()
+        public async Task<int> CountAdmins()
         {
+
+            await Task.Delay(2000);
             return _users.Count(u => u.Role == "Admin");
         }
 
-        public User? GetUserByEmail(string email)
+        public async Task<User?> GetUserByEmail(string email)
         {
+            await Task.Delay(800);
             return _users.FirstOrDefault(u => u.Email == email);
         }
 
-        public int GetMaxAge()
+        public async Task<int> GetMaxAge()
         {
+            await Task.Delay(800);
             return _users.Max(u => u.Age);
         }
 
-        public double GetAverageAge()
+        public async Task<double> GetAverageAge()
         {
+            await Task.Delay(800);
             return _users.Average(u => u.Age);
         }
 
-        public List<string> GetDistinctDepartments()
+        public async Task<List<string>> GetDistinctDepartments()
         {
+            await Task.Delay(800);
             return _users.Select(u =>u.Department).Distinct().ToList();
         }
 
