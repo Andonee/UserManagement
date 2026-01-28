@@ -1,18 +1,20 @@
 ﻿using System;
 using UserManagement;
+using UserManagement.Data;
 using UserManagement.Models;
 using UserManagement.Services;
 using UserManagement.Utils;
 
 class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         IUserService userService = new UserService();
         var ReadRequiredInt = ConsoleInputHelper.ReadRequiredInt;
         var ReadRequiredInput = ConsoleInputHelper.ReadRequiredInput;
 
-        List<User> users = new List<User>();
+        using var context = new AppDbContext();
+        context.Database.EnsureCreated();
 
 
         while (true)
@@ -46,14 +48,14 @@ class Program
                 case 3:
                     int id = ReadRequiredInt("User ID: ");
 
-                    User? foundedUser = userService.GetById(id);
+                    User? foundedUser = await userService.GetById(id);
                     if (foundedUser is not null)
                     {
                         Console.WriteLine(foundedUser.ToString());
                     }
                     break;
                 case 4:
-                    List<User> allUsers = userService.GetAll();
+                    List<User> allUsers = await userService.GetAll();
 
                     foreach (User u in allUsers)
                     {
@@ -63,7 +65,7 @@ class Program
                 case 5:
                     int userId = ReadRequiredInt("User ID: ");
 
-                    bool removed = userService.Remove(userId);
+                    bool removed = await userService.Remove(userId);
 
                     if (removed)
                     {
@@ -78,12 +80,12 @@ class Program
                     int userID = ReadRequiredInt("User ID: ");
                     string name = ReadRequiredInput("Name: ");
 
-                    User updatedUser = userService.Update(userID, name);
+                    User updatedUser = await userService.Update(userID, name);
                     Console.WriteLine("User has been updated.");
                     break;
                 case 7:
                     int age = ReadRequiredInt("User age: ");
-                    List<User> usersOlder = userService.GetUsersOlderThan(age);
+                    List<User> usersOlder = await userService.GetUsersOlderThan(age);
 
                     foreach (User u in usersOlder)
                     {
@@ -91,7 +93,7 @@ class Program
                     }
                     break;
                 case 8:
-                    List<User> sortedByLastName = userService.GetAllSortedByLastName();
+                    List<User> sortedByLastName = await userService.GetAllSortedByLastName();
 
                     foreach (User u in sortedByLastName)
                     {
@@ -99,7 +101,7 @@ class Program
                     }
                     break;
                 case 9:
-                    List<User> activeUsersSortedByAge = userService.GetActiveUsersSortedByAge();
+                    List<User> activeUsersSortedByAge = await userService.GetActiveUsersSortedByAge();
 
                     foreach(User u in activeUsersSortedByAge)
                     {
@@ -107,7 +109,7 @@ class Program
                     }
                     break;
                 case 10:
-                    List<string> emails = userService.GetUserEmails();
+                    List<string> emails = await userService.GetUserEmails();
 
                     foreach(string e in emails)
                     {
@@ -115,7 +117,7 @@ class Program
                     }
                     break;
                 case 11:
-                    var grouped = userService.GroupUsersByDepartment();
+                    var grouped = await userService.GroupUsersByDepartment();
 
                     foreach (var kvp in grouped)
                     {
@@ -127,13 +129,13 @@ class Program
                     }
                     break;
                 case 12:
-                int adminAmount = userService.CountAdmins();
+                int adminAmount = await userService.CountAdmins();
                 Console.WriteLine($"Admins amount {adminAmount}");
                 break;
 
                 case 13:
                     string email = ReadRequiredInput("Email: ");
-                    User? userByEmail = userService.GetUserByEmail(email);
+                    User? userByEmail =  await userService.GetUserByEmail(email);
 
                     if(userByEmail is not null)
                     {
@@ -142,15 +144,15 @@ class Program
                     break;
 
                 case 14:
-                    int maxAgedUser = userService.GetMaxAge();
-                    Console.WriteLine($"Max age is", maxAgedUser);
+                    int? maxAgedUser = await userService.GetMaxAge();
+                    Console.WriteLine($"Max age is {maxAgedUser}" );
                     break;
 
                 case 15:
                     Console.WriteLine($"Average age is: {userService.GetAverageAge()}");
                     break;
                 case 16:
-                    List<string> distinctDepartments = userService.GetDistinctDepartments();
+                    List<string> distinctDepartments = await userService.GetDistinctDepartments();
 
                     foreach(string department in distinctDepartments)
                         { Console.WriteLine(department); }

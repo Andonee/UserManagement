@@ -8,7 +8,7 @@ namespace UserManagement.Models
 {
     internal record User
     {
-        public int Id { get; init; }
+        public int Id { get; set; }
         public string Name { get; init; } = "";
         public string LastName { get; init; } = "";
         public string Email { get; init; } = "";
