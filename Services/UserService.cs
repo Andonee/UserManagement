@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using UserManagement.Data;
 using UserManagement.Models;
 
 namespace UserManagement.Services
@@ -13,117 +15,124 @@ namespace UserManagement.Services
     {
 
         private int _nextId = 1;
-        private readonly List<User> _users = new();
+        //private readonly List<User> _users = new();
+        private readonly AppDbContext _context = new();
 
         public UserService()
         {
-            SeedUsers(); // wypełnia listę 100 userami przy starcie
+            //SeedUsers(); // wypełnia listę 100 userami przy starcie
         }
 
         public async Task<User> Create(User user)
         {
-            await Task.Delay(800);
-            var createdUser = user with { Id = _nextId++ };
-            _users.Add(createdUser);
-            return createdUser;
+            //var created = user with { Id = 0 }; //EF ustawi Id
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            Console.WriteLine($"Saved user, Id = {user.Id}");
+            return user;
 
         }
 
         public async Task<User?> GetById(int id)
         {
-            await Task.Delay(100);
-            return  _users.FirstOrDefault(u => u.Id == id);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task<List<User>> GetAll()
         {
-            await Task.Delay(1000);
-            return _users;
+            return await _context.Users.ToListAsync();
         }
 
         public async Task<User> Update(int id, string name)
         {
-            await Task.Delay(800);
-            var index = _users.FindIndex(u => u.Id == id);
-            if (index == -1)
-                throw new InvalidOperationException("User not found");
 
-            var updatedUser = _users[index] with { Name = name };
-            _users[index] = updatedUser;
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user is null) return null;
+
+
+            var updatedUser = user with { Name = name };
+            _context.Users.Remove(user);
+            _context.Users.Add(user);
+
+            await _context.SaveChangesAsync();
 
             return updatedUser;
         }
 
         public async Task<bool> Remove(int id)
         {
-            await Task.Delay(800);
-            var user = _users.FirstOrDefault(u => u.Id == id);
+            
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
             if (user is null)
                 return false;
 
-            _users.Remove(user);
+            _context.Users.Remove(user);
+
+            await _context.SaveChangesAsync();
             return true;
         }
 
         public async Task<List<User>> GetUsersOlderThan(int age)
         {
-            await Task.Delay(800);
-            return _users.Where(u => u.Age > age).ToList();
+            var users = await _context.Users.Where(u => u.Age > age).ToListAsync();
+            return users;
         }
 
         public async Task<List<User>> GetAllSortedByLastName()
         {
-            await Task.Delay(1200);
-            return _users.OrderBy(u => u.LastName).ToList();
+
+            var users = await _context.Users.OrderByDescending(u => u.LastName).ToListAsync();
+            return users;
         }
 
         public async Task<List<User>> GetActiveUsersSortedByAge()
         {
-            await Task.Delay(800);
-            return _users.Where(u => u.Status == "Active").OrderBy(u => u.Age).ToList();
+            var users = await _context.Users.Where(u => u.Status == "Active").OrderByDescending(u => u.Age).ToListAsync();
+            return users;
         }
 
         public async Task<List<string>> GetUserEmails()
         {
-            await Task.Delay(800);
-            return _users.Select(u => u.Email).ToList();
+            var emails = await _context.Users.Select(u => u.Email).ToListAsync();
+            return emails;
         }
 
         public async Task<Dictionary<string, List<User>>> GroupUsersByDepartment()
         {
-            await Task.Delay(800);
-            return _users.GroupBy(u => u.Department).ToDictionary(g => g.Key, g => g.ToList());
+            var users = await _context.Users.GroupBy(u => u.Department).ToDictionaryAsync(g => g.Key, g=>g.ToList());
+            return users;
         }
 
         public async Task<int> CountAdmins()
         {
 
-            await Task.Delay(2000);
-            return _users.Count(u => u.Role == "Admin");
+            var admins = await _context.Users.Where(u => u.Role == "Admin").ToListAsync();
+            return admins.Count();
         }
 
         public async Task<User?> GetUserByEmail(string email)
         {
-            await Task.Delay(800);
-            return _users.FirstOrDefault(u => u.Email == email);
+            var user = await _context.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
+            return user;
         }
 
-        public async Task<int> GetMaxAge()
+        public async Task<int?> GetMaxAge()
         {
-            await Task.Delay(800);
-            return _users.Max(u => u.Age);
+            var maxAge = await _context.Users.Select(u => (int?)u.Age).MaxAsync();
+            return maxAge;
         }
 
         public async Task<double> GetAverageAge()
         {
-            await Task.Delay(800);
-            return _users.Average(u => u.Age);
+            var average = await _context.Users.AverageAsync(u => u.Age);
+            return average;
         }
 
         public async Task<List<string>> GetDistinctDepartments()
         {
-            await Task.Delay(800);
-            return _users.Select(u =>u.Department).Distinct().ToList();
+            var departments = await _context.Users.Select(u => u.Department).Distinct().ToListAsync();
+            return departments;
         }
 
 
@@ -131,7 +140,7 @@ namespace UserManagement.Services
 
 
 
-        private void SeedUsers()
+        private async Task SeedUsers()
         {
             var firstNames = new[] { "Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Hannah", "Ivan", "Jack" };
             var lastNames = new[] { "Smith", "Johnson", "Williams", "Brown", "Jones", "Miller", "Davis", "Wilson", "Taylor", "Anderson" };
@@ -145,7 +154,7 @@ namespace UserManagement.Services
             {
                 var user = new User
                 {
-                    Id = _nextId++, // auto-increment ID
+                    //Id = _nextId++, // auto-increment ID
                     Name = firstNames[random.Next(firstNames.Length)],
                     LastName = lastNames[random.Next(lastNames.Length)],
                     Email = $"user{i + 1}@example.com",
@@ -155,8 +164,11 @@ namespace UserManagement.Services
                     Department = departments[random.Next(departments.Length)]
                 };
 
-                _users.Add(user);
+                //_users.Add(user);
+                _context.Users.Add(user);
             }
+            await _context.SaveChangesAsync();
+
         }
     }
 }

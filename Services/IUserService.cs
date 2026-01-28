@@ -30,7 +30,7 @@ namespace UserManagement.Services
 
         Task<User?> GetUserByEmail(string email);
 
-        Task<int> GetMaxAge();
+        Task<int?> GetMaxAge();
 
         Task<double> GetAverageAge();
 

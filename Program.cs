@@ -1,5 +1,6 @@
 ﻿using System;
 using UserManagement;
+using UserManagement.Data;
 using UserManagement.Models;
 using UserManagement.Services;
 using UserManagement.Utils;
@@ -12,7 +13,8 @@ class Program
         var ReadRequiredInt = ConsoleInputHelper.ReadRequiredInt;
         var ReadRequiredInput = ConsoleInputHelper.ReadRequiredInput;
 
-        List<User> users = new List<User>();
+        using var context = new AppDbContext();
+        context.Database.EnsureCreated();
 
 
         while (true)
@@ -142,8 +144,8 @@ class Program
                     break;
 
                 case 14:
-                    int maxAgedUser = await userService.GetMaxAge();
-                    Console.WriteLine($"Max age is", maxAgedUser);
+                    int? maxAgedUser = await userService.GetMaxAge();
+                    Console.WriteLine($"Max age is {maxAgedUser}" );
                     break;
 
                 case 15:
